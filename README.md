@@ -108,3 +108,33 @@ route could lift the tokens. Memory is harder to reach. The cost is that a hard 
 ends the session and the user signs in again, which I accepted as the safer trade.
 
 ---
+
+## Decision log
+
+**Tokens held in memory, not in cookies.**
+The alternative was cookie-based auth, which DummyJSON supports. Rejected because
+`/auth/refresh` sets the `refreshToken` cookie with `Max-Age=60` while the token inside
+it is valid for about 30 days. The cookie would be discarded a minute after login, so a
+user would be thrown back to the login screen every minute with no way to recover — the
+exact failure the brief asks me to prevent. The cookies are also `HttpOnly`, so the app
+cannot read them to work around it. Bearer tokens from the response body, held in
+memory, are the only option that behaves correctly here.
+
+**Cache write after a stock correction, not invalidate-and-refetch.**
+The default after a successful write is to invalidate the query and refetch. Rejected
+because `PUT /products/{id}` does not persist: it returns the updated object, but a `GET`
+immediately after returns the original value. Refetching would visibly revert the user's
+correction seconds after they saved it, which is worse than not showing it at all.
+Writing the response into the cache keeps every view of that item consistent for the
+session. The trade-off is that a full reload restores the original count, and the UI says
+so next to the form.
+
+**A back link instead of a breadcrumb.**
+A breadcrumb such as Stock / Smartphones / iPhone 5s implies the category is a place you
+can navigate back to. It isn't: the list state is a query — search, category, sort and
+page held together in the URL. Clicking "Smartphones" in a breadcrumb would drop the
+user's search term and page position, breaking the requirement that they return to where
+they were. A single back link carrying the whole query string restores the exact list
+they came from.
+
+---
