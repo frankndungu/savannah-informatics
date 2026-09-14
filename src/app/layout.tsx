@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
+import { IBM_Plex_Sans } from "next/font/google";
+
+const plex = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex",
+});
 
 export const metadata: Metadata = {
   title: "Stock console",
@@ -12,7 +19,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased">
+      <body className={`${plex.variable} bg-slate-50 text-slate-900 antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
