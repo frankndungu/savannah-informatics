@@ -21,3 +21,4 @@ jobs:
       - run: npm run test
       - name: Check commit messages
         run: npx commitlint --from origin/main --to HEAD --verbose
+      - run: npm run build
