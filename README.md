@@ -4,13 +4,22 @@ An internal stock console for a clinic supplies team: search the catalogue, filt
 sort it, open an item, and correct the stock count when a physical count disagrees with
 the system.
 
-**Live:** _[deployed URL]_
+**Live:** _[clinic stock control](https://savannah-informatics-chi.vercel.app/)_
 
 ---
 
 ## Running locally
 
-_[install, env, dev command]_
+```bash
+git clone https://github.com/frankndungu/savannah-informatics.git
+cd savannah-informatics
+npm install
+npm run dev
+```
+
+No environment variables are needed. DummyJSON requires no key.
+
+Sign in with `emilys` / `emilyspass`, or any user from https://dummyjson.com/users.
 
 ---
 
@@ -138,3 +147,58 @@ they were. A single back link carrying the whole query string restores the exact
 they came from.
 
 ---
+
+### Fetching, caching and invalidation
+
+Data is fetched with TanStack Query. Each list query is keyed by the full set of URL
+parameters, so every combination of search, category, sort and page is a separate cache
+entry. The rendered view is bound to a key rather than to the most recent response. A
+slow response for a search the user has already replaced lands in a different entry and
+cannot appear on screen.
+
+The search input is debounced by 400ms before it reaches the URL. This is partly a user
+experience choice and partly a hard constraint. The API rate limits to 100 requests per
+window, which unthrottled search as you type would exhaust.
+
+While a new query loads, the previous results stay on screen dimmed rather than
+collapsing to a loading state. On a slow connection the screen never goes blank between
+keystrokes.
+
+Nothing is invalidated after a stock correction. The response is written into the item's
+cache entry instead, and item queries do not refetch within a session. The API does not
+store writes, so a refetch could only discard the user's correction.
+
+---
+
+### Accessibility
+
+The app is built from semantic elements: real buttons, links, labels and lists. That
+makes it reachable and announced without extra ARIA. Every input has an associated
+label. Focus is never suppressed and is visible at every stop.
+
+The result count sits in a live region, so a screen reader user hears the count change
+after a search. Errors are announced with role="alert". The list is marked aria-busy
+while a new query loads.
+
+Tested by completing a full task with the keyboard alone: search, filter, open an item,
+save a correction. Also checked at 360px width.
+
+---
+
+## CI/CD
+
+Deployed on Vercel at [deploy link](https://savannah-informatics-chi.vercel.app/). Production deploys are triggered by merges to main.
+
+On every pull request, GitHub Actions runs the formatter check, the linter, the test
+suite, the production build, and a commit message check against Conventional Commits.
+Any of these failing blocks the merge. main is protected by a ruleset requiring a pull
+request and passing checks, so nothing reaches production without them.
+
+The commit message check also runs locally through a husky commit-msg hook. A message
+that does not conform fails before it becomes a commit.
+
+---
+
+## AI use and reflection
+
+See [REFLECTION.md](./REFLECTION.md).
