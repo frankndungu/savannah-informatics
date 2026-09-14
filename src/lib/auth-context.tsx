@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { apiFetch, ApiError } from "./api";
-import { setTokens, getTokens } from "./tokens";
+import { ApiError } from "./api";
+import { setTokens } from "./tokens";
 
 type User = { id: number; username: string; firstName: string; lastName: string };
 
